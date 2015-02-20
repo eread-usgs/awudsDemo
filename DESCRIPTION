@@ -1,0 +1,9 @@
+Package: awudsDemo
+Type: Package
+Title: A package demonstrating what R can do with AWUDS data.
+Version: 1.0
+Date: 2015-02-20
+Author: dblodgett@usgs.gov
+Maintainer: Who to complain to <dblodgett@usgs.gov>
+Description: AWUDS data from Stash, geospatial data from Science Base, user in RStudio, open custom water use script, get the latest data from Stash, get the data from SB, load NJ data, do some stats, do some mapping. Zoom package in R. Make a change to data point, push to stash, create a knitr report w figures/ maps. 
+License: CC0
