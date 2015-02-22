@@ -18,10 +18,11 @@
 #'@export
 summaryHistogram<-function(awudsData, summaryCategory, popNorm=FALSE, truncateLower=0, binwidth=NULL)
 {
+  # !!! The addSummaryColumns function was written after this function. It needs to be run first. 
+  # !!! For the sake of demonstration, this should be OK but this function could be extended to work for any
+  # !!! in the AWUDS data from. The way this is written is totally wrong given that concept.
   if(grepl('publicSupply',summaryCategory))
   {
-    # Calculate summary.
-    awudsData$publicSupply <- awudsData$PS.WGWFr + awudsData$PS.WGWSa + awudsData$PS.WSWFr + awudsData$PS.WSWSa
     if(popNorm)
     {
       # Normalize to population
