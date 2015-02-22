@@ -1,4 +1,5 @@
-# Get Latest Data from AWUDS
+# Get Latest Data from AWUDS: Also here: http://nwis.usgs.gov/awuds/dump/countydata
+awudsData<-getAWUDSdump('/Users/dblodgett/Documents/Projects/WaterSmart/4_code/R_NetCDF-DSG/AWUDS/wu_countydata.txt')
 
 # Get Spatial Data from ScienceBase
 
