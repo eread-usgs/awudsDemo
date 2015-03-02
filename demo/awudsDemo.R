@@ -7,7 +7,7 @@ gpclibPermit()
 library(plyr)
 
 # Get Latest Data from AWUDS: Also here: http://nwis.usgs.gov/awuds/dump/countydata
-awudsData<-getAWUDSdump('/Users/dblodgett/Documents/Projects/WaterSmart/4_code/R_NetCDF-DSG/AWUDS/wu_countydata.txt')
+awudsData<-getAWUDSdump('http://nwis.usgs.gov/awuds/dump/older_files/countydata')
 print(names(awudsData))
 
 # Add summary collumns to awudsData data frame.
