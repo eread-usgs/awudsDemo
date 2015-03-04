@@ -1,0 +1,136 @@
+---
+title: "Sample AWUDs Report"
+author: "Emily Read"
+date: "March 4, 2015"
+output: html_document
+---
+
+In this report, we'll walk through the process of retrieving, preparing, analyzing, and visualizing water use data, using an R Markdown document. R Markdown allows for dynamic report generation. Here, 'dynamic' means that when data get updated or modified, or if there is a new or different visualization or table you want to share with your collaborators, you can easily re-generate the pdf report. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+    
+library(ggplot2)
+library(awudsDemo)
+library(psych)
+library(rgdal)
+library(maptools)
+#gpclibPermit()
+library(plyr)
+library(reshape2)
+
+```
+    
+    
+R Markdown has the option to embed R code, called a 'chunk', like the one shown below in the gray box. You can use chunks to indicate to the reader what you are doing in R. Here's what the chunk included below does: The first line of R code pulls data from the NWIS internal site and loads it into the R environment. The second line renames the data column names. Any text you see in italics and following the hashtag is an R 'comment'- this is text that is not evaluated by R and is intended for human eyes. 
+
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE, results='hide'}
+# First we'll pull the latest data from AWUDS: 
+awudsData<-getAWUDSdump('http://nwis.usgs.gov/awuds/dump/older_files/countydata')
+
+# Next we'll modify the column names using a function in the awudsDemo package
+awudsData<-addSummaryColumns(awudsData)
+```
+
+```{r, eval=FALSE}
+# First we'll pull the latest data from AWUDS: 
+awudsData<-getAWUDSdump('http://nwis.usgs.gov/awuds/dump/older_files/countydata')
+
+# Next we'll modify the column names using a function in the awudsDemo package
+awudsData<-addSummaryColumns(awudsData)
+```
+
+
+You can also print data summaries or results in an R Markdown document. Next, we'll print two statistical summaries of the public supply data using the R functions 'summary' and describe', which provide range and quartile information, and some standard univariate statistics:
+
+```{r}
+summary(awudsData$publicSupply)
+describe(awudsData$publicSupply)
+```
+
+For the rest of this report, I'm going to 'supress' the R code that is used to generate the figures and maps. However, that code remains editable and shareable. 
+
+Plots can be embedded in R Markdown files. Here is an example histogram of irrigation in NJ counties:
+
+```{r, echo=FALSE}
+# Load subset of data for New Jersey
+njAWUDS<-subset(awudsData, USSTATEALPHACODE=='NJ' & YEAR == 2005)
+
+# Bar chart of water use category by county
+x=barplot(njAWUDS$irrigation,  ylab="Irrigation by county",xaxt="n")
+labs <- njAWUDS$COUNTYNAME
+text(cex=1, x=x+0.25, y=-1.25, labs, xpd=TRUE, srt=45, pos=2)
+
+```
+
+
+
+
+We can can also compare water use categories across all states. 
+```{r, echo=FALSE}
+# Box and whiskers of multiple water use categories by state
+#par(mfrow=c(5,1))
+boxplot(mining~USSTATEALPHACODE, awudsData, ylab='Mining', xlab='State')
+boxplot(publicSupply~USSTATEALPHACODE, awudsData, ylab='Public Supply', xlab='State')
+boxplot(domestic~USSTATEALPHACODE, awudsData, ylab='Domestic', xlab='State')
+boxplot(irrigation~USSTATEALPHACODE, awudsData, ylab="Irrigation", xlab='State')
+boxplot(thermoelectricPower~USSTATEALPHACODE, awudsData, ylab='Thermoelectric', xlab='State')
+```
+
+
+
+Here is a pie chart of water use for NJ:
+```{r, echo=FALSE}
+# Pie chart of water use categories for a given county
+i=8
+pie(unlist(njAWUDS[i,c("publicSupply", "domestic", "irrigation", "thermoelectricPower", "livestockAndAquaculture", "industrial" )]), main = njAWUDS[i,'COUNTYNAME'])
+
+```
+    
+    
+    
+Next we'll pull in some geospatial data and map it together with water use data on public supply in New Jersey: 
+```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
+    
+# Get Spatial Data from ScienceBase and load it up. Original source of shapefile is here: http://publications.newberry.org/ahcbp/downloads/
+
+counties<-getCountyLayer()
+counties@data$id <- rownames(counties@data)
+summary(counties)
+proj4string(counties) <- CRS("+init=epsg:4326") # The native projection is epsg:4326, this will warn.
+counties <- spTransform(counties, CRS("+init=epsg:3857")) # Change to web mercator for fun.
+summary(counties)
+njCounties <- counties[counties$STATE_TERR == "New Jersey",]
+summary(njCounties)
+njCounties@data$id <- rownames(njCounties@data)
+njCountiesMap<-fortify(njCounties,region="id")
+njCountiesMap <- join(njCountiesMap, njCounties@data, by="id")
+njCountiesAWUDS <- join(njCountiesMap, awudsData, by="FIPS", match="all")
+
+```
+    
+```{r, echo=FALSE}
+# Choropleth of counties colored by water use category
+map<-ggplot(njCountiesAWUDS) + 
+  aes(long, lat, group=group, fill=publicSupply) + 
+  geom_polygon() + geom_path(color="black") + 
+  coord_equal() + scale_fill_gradient(low="green",high="darkgreen")
+map
+```
+
+
+
+
+ 
+## Getting started
+To work with R Markdown:
+ 
+* Install [R](http://www.r-project.org/)
+* Install the lastest version of [RStudio](http://rstudio.org/download/) (at time of posting, this is 0.99)
+* Install the latest version of the `knitr` package: `install.packages("knitr")`
+ 
+
+ 
+ 
