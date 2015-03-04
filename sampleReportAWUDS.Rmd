@@ -99,23 +99,26 @@ Next we'll pull in some geospatial data and map it together with water use data 
 counties<-getCountyLayer()
 counties@data$id <- rownames(counties@data)
 summary(counties)
-proj4string(counties) <- CRS("+init=epsg:4326") # The native projection is epsg:4326, this will warn.
-counties <- spTransform(counties, CRS("+init=epsg:3857")) # Change to web mercator for fun.
-summary(counties)
+
 njCounties <- counties[counties$STATE_TERR == "New Jersey",]
-summary(njCounties)
-njCounties@data$id <- rownames(njCounties@data)
-njCountiesMap<-fortify(njCounties,region="id")
-njCountiesMap <- join(njCountiesMap, njCounties@data, by="id")
+UTM_nj_counties <- spTransform(njCounties, CRS("+proj=merc +zone=18u +datum=WGS84")) # Change UTM-18
+summary(UTM_nj_counties)
+UTM_nj_counties@data$id <- rownames(UTM_nj_counties@data)
+njCountiesMap<-fortify(UTM_nj_counties,region="id")
+njCountiesMap <- join(njCountiesMap, UTM_nj_counties@data, by="id")
+njCountiesMap <- rename(njCountiesMap,c("lat"="meters_North","long"="meters_East", "lon"="meters_East")) # rename because data are no longer lat/lon
 njCountiesAWUDS <- join(njCountiesMap, awudsData, by="FIPS", match="all")
+
 
 ```
     
 ```{r, echo=FALSE}
 # Choropleth of counties colored by water use category
 map<-ggplot(njCountiesAWUDS) + 
-  aes(long, lat, group=group, fill=publicSupply) + 
+  aes(meters_East, meters_North, group=group, fill=publicSupply) + 
   geom_polygon() + geom_path(color="black") + 
+  xlab("East (meters)") +
+  ylab("North (meters)") +
   coord_equal() + scale_fill_gradient(low="green",high="darkgreen")
 map
 ```
