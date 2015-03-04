@@ -30,6 +30,6 @@ getAWUDSdump<-function(dataLocation, convertToNumerical=TRUE)
       }
     }
   }
-  names(awudsData)[5]<-"FIPS"
-  return(awudsData)
+  names(awuds_data)[5]<-"FIPS"
+  return(awuds_data)
 }

@@ -2,5 +2,8 @@
 
 export(addSummaryColumns)
 export(getAWUDSdump)
+export(getCountyLayer)
 export(summaryHistogram)
 import(ggplot2)
+import(httr)
+import(rgdal)

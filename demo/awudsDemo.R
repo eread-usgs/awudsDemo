@@ -5,9 +5,10 @@ library(rgdal)
 library(maptools)
 gpclibPermit()
 library(plyr)
+library(reshape2)
 
 # Get Latest Data from AWUDS: Also here: http://nwis.usgs.gov/awuds/dump/countydata
-awudsData<-getAWUDSdump('/Users/dblodgett/Documents/Projects/WaterSmart/4_code/R_NetCDF-DSG/AWUDS/wu_countydata.txt')
+awudsData<-getAWUDSdump('http://nwis.usgs.gov/awuds/dump/older_files/countydata')
 print(names(awudsData))
 
 # Add summary collumns to awudsData data frame.
@@ -27,20 +28,31 @@ describe(awudsData$publicSupply)
 describe(awudsData) # too much, but worth demonstrating?
 
 # Load subset of data for New Jersey
-njAWUDS<-subset(awudsData, awudsData$USSTATEALPHACODE=='NJ')
+njAWUDS<-subset(awudsData, USSTATEALPHACODE=='NJ' & YEAR == 2005)
 
 # Bar chart of water use category by county
+x=barplot(njAWUDS$irrigation,  ylab="Irrigation by county",xaxt="n")
+labs <- njAWUDS$COUNTYNAME
+text(cex=1, x=x+0.25, y=-1.25, labs, xpd=TRUE, srt=45, pos=2)
 
-# Box and whiskers of multiple water use categories for all counties in a state.
+# Box and whiskers of multiple water use categories by state
+boxplot(mining~USSTATEALPHACODE, awudsData, ylab='Mining', xlab='State')
+boxplot(publicSupply~USSTATEALPHACODE, awudsData, ylab='Public Supply', xlab='State')
+boxplot(domestic~USSTATEALPHACODE, awudsData, ylab='Domestic', xlab='State')
+boxplot(irrigation~USSTATEALPHACODE, awudsData, ylab="Irrigation", xlab='State')
+boxplot(thermoelectricPower~USSTATEALPHACODE, awudsData, ylab='Thermoelectric', xlab='State')
 
 # Pie chart of water use categories for a given county
+i=5
+pie(unlist(njAWUDS[i,c("publicSupply", "domestic", "irrigation", "thermoelectricPower", "livestockAndAquaculture", "industrial" )]), main = njAWUDS[i,'COUNTYNAME'])
+
 
 # Get Spatial Data from ScienceBase and load it up.
-# Will pull locally for now, can pull from remote easily.
+# Pulling data from ScienceBase
 # Original source of shapefile is here: http://publications.newberry.org/ahcbp/downloads/
-county_shp_folder<-"/Users/dblodgett/Documents/Projects/WaterSmart/4_code/R_NetCDF-DSG/AWUDS/US_AtlasHCB_Counties_Gen001/US_HistCounties_Gen001_Shapefile/"
-county_shp_file<-"US_HistCounties_Gen001"
-counties<-readOGR(county_shp_folder, county_shp_file)
+
+counties<-getCountyLayer()
+
 counties@data$id <- rownames(counties@data)
 summary(counties)
 proj4string(counties) <- CRS("+init=epsg:4326") # The native projection is epsg:4326, this will warn.
@@ -53,6 +65,7 @@ njCountiesMap<-fortify(njCounties,region="id")
 njCountiesMap <- join(njCountiesMap, njCounties@data, by="id")
 # This join doesn't appear to be working right.
 njCountiesAWUDS <- join(njCountiesMap, awudsData, by="FIPS", match="all")
+
 # This works, but it's kinda messed up, I need help.
 map<-ggplot(njCountiesAWUDS) + 
   aes(long, lat, group=group, fill=TP.TotPop) + 
