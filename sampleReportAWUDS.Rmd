@@ -9,14 +9,14 @@ In this report, we'll walk through the process of retrieving, preparing, analyzi
 
 
 
-```{r, echo=FALSE, warning=FALSE, message=FALSE}
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results='hide'}
     
 library(ggplot2)
 library(awudsDemo)
 library(psych)
 library(rgdal)
 library(maptools)
-#gpclibPermit()
+# gpclibPermit()
 library(plyr)
 library(reshape2)
 
