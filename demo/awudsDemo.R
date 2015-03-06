@@ -1,12 +1,17 @@
+# Install needed R packages
+install.packages('devtools')
+install.packages('ggplot2')
+install.packages('psych')
+
+# Need devtools to install the in development package from github.
+library(devtools)
+install_github('dblodgett-usgs/awudsDemo')
+
 library(ggplot2)
 library(awudsDemo)
 library(psych)
-library(rgdal)
-library(maptools)
-gpclibPermit()
-library(plyr)
-library(reshape2)
-library(ggmap)
+
+# Show help for awudsDemo Package !!!
 
 # Get Latest Data from AWUDS: Also here: http://nwis.usgs.gov/awuds/dump/countydata
 awudsData<-getAWUDSdump('http://nwis.usgs.gov/awuds/dump/older_files/countydata')
