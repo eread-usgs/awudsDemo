@@ -16,10 +16,11 @@ library(awudsDemo)
 library(psych)
 library(rgdal)
 library(maptools)
-gpclibPermit()
+#gpclibPermit()
 library(plyr)
 library(reshape2)
 library(ggmap)
+library(googleVis)
 
 ```
     
@@ -53,7 +54,12 @@ describe(awudsData$publicSupply)
 
 For the rest of this report, I'm going to 'supress' the R code that is used to generate the figures and maps. However, that code remains editable and shareable. 
 
-Plots can be embedded in R Markdown files. Here is an example histogram of irrigation in NJ counties:
+Plots can be embedded in R Markdown files. Here is an example the R script and output demostrating a custom function we built to display a histogram of public supply for all states in the US, normalized by population:
+```{r, results='hide', message=FALSE, warning=FALSE}
+summaryHistogram(awudsData, 'publicSupply', popNorm=TRUE, truncateLower=1)
+```
+
+Here is a bar chart of irrigation in NJ counties:
 
 ```{r, echo=FALSE}
 # Load subset of data for New Jersey
@@ -74,10 +80,6 @@ We can can also compare water use categories across all states.
 # Box and whiskers of multiple water use categories by state
 #par(mfrow=c(5,1))
 boxplot(mining~USSTATEALPHACODE, awudsData, ylab='Mining', xlab='State')
-boxplot(publicSupply~USSTATEALPHACODE, awudsData, ylab='Public Supply', xlab='State')
-boxplot(domestic~USSTATEALPHACODE, awudsData, ylab='Domestic', xlab='State')
-boxplot(irrigation~USSTATEALPHACODE, awudsData, ylab="Irrigation", xlab='State')
-boxplot(thermoelectricPower~USSTATEALPHACODE, awudsData, ylab='Thermoelectric', xlab='State')
 ```
 
 
@@ -124,6 +126,7 @@ map<-base_layer +
       scale_fill_gradient(low="darkgreen",high="green")
 map
 ```
+ 
  
 ## Getting started
 To work with R Markdown:
