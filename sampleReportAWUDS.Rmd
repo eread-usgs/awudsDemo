@@ -16,9 +16,10 @@ library(awudsDemo)
 library(psych)
 library(rgdal)
 library(maptools)
-# gpclibPermit()
+gpclibPermit()
 library(plyr)
 library(reshape2)
+library(ggmap)
 
 ```
     
@@ -91,41 +92,38 @@ pie(unlist(njAWUDS[i,c("publicSupply", "domestic", "irrigation", "thermoelectric
     
     
     
-Next we'll pull in some geospatial data and map it together with water use data on public supply in New Jersey: 
+Next we'll pull in some geospatial data and map it together with water use data on public supply in New Jersey.  
+
+Note that the data is being accessed from a [ScienceBase Item.](https://www.sciencebase.gov/catalog/item/54f494bde4b02419550d003a)  
+
+Can also access base maps from google and other sources for mapping.
+
+
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, results='hide'}
-    
+  
 # Get Spatial Data from ScienceBase and load it up. Original source of shapefile is here: http://publications.newberry.org/ahcbp/downloads/
 
 counties<-getCountyLayer()
 counties@data$id <- rownames(counties@data)
 summary(counties)
-
 njCounties <- counties[counties$STATE_TERR == "New Jersey",]
-UTM_nj_counties <- spTransform(njCounties, CRS("+proj=merc +zone=18u +datum=WGS84")) # Change UTM-18
-summary(UTM_nj_counties)
-UTM_nj_counties@data$id <- rownames(UTM_nj_counties@data)
-njCountiesMap<-fortify(UTM_nj_counties,region="id")
-njCountiesMap <- join(njCountiesMap, UTM_nj_counties@data, by="id")
-njCountiesMap <- rename(njCountiesMap,c("lat"="meters_North","long"="meters_East", "lon"="meters_East")) # rename because data are no longer lat/lon
+
+njCounties@data$id <- rownames(njCounties@data)
+njCountiesMap<-fortify(njCounties,region="id")
+njCountiesMap <- join(njCountiesMap, njCounties@data, by="id")
 njCountiesAWUDS <- join(njCountiesMap, awudsData, by="FIPS", match="all")
 
-
-```
-    
-```{r, echo=FALSE}
 # Choropleth of counties colored by water use category
-map<-ggplot(njCountiesAWUDS) + 
-  aes(meters_East, meters_North, group=group, fill=publicSupply) + 
-  geom_polygon() + geom_path(color="black") + 
-  xlab("East (meters)") +
-  ylab("North (meters)") +
-  coord_equal() + scale_fill_gradient(low="green",high="darkgreen")
+bounds<-bbox(njCounties)
+base_layer<-ggmap(get_map(location = bounds, zoom=8))
+
+map<-base_layer +
+      geom_polygon(data = njCountiesAWUDS, aes(long, lat, group=group, fill=publicSupply)) +
+      xlab("Longitude") +
+      ylab("Latitude") +
+      scale_fill_gradient(low="darkgreen",high="green")
 map
 ```
-
-
-
-
  
 ## Getting started
 To work with R Markdown:

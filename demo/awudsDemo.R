@@ -6,6 +6,7 @@ library(maptools)
 gpclibPermit()
 library(plyr)
 library(reshape2)
+library(ggmap)
 
 # Get Latest Data from AWUDS: Also here: http://nwis.usgs.gov/awuds/dump/countydata
 awudsData<-getAWUDSdump('http://nwis.usgs.gov/awuds/dump/older_files/countydata')
@@ -24,8 +25,6 @@ describe(awudsData$publicSupply)
 describe(awudsData)
 
 # Scatter plot of county population vs a water use category.
-# Add up all the public supply categories. (source NWC public supply summary category)
-# More here: https://github.com/USGS-CIDA/nwc/blob/master/nwc/src/main/webapp/client/nwc/workflows/waterBudget/waterBudgetServices.js
 summaryHistogram(awudsData, 'publicSupply', popNorm=FALSE)
 summaryHistogram(awudsData, 'publicSupply', popNorm=FALSE, truncateLower=50)
 summaryHistogram(awudsData, 'publicSupply', popNorm=FALSE, truncateLower=50, binwidth=150)
